@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>فحص دعوات الزفاف</title>
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { background:#1A0E03; font-family:'Tajawal',Arial,sans-serif; direction:rtl; min-height:100vh; color:#EDE0C4; }
+
+.header {
+background:linear-gradient(180deg,#0D0701,#1A0E03);
+padding:20px;text-align:center;
+border-bottom:2px solid rgba(196,154,60,0.3);
+}
+.header h1 { font-family:‘Aref Ruqaa’,serif;font-size:1.5rem;color:#D4AF5A; }
+.header p { font-size:0.8rem;color:rgba(212,175,90,0.6);margin-top:4px; }
+
+.tabs {
+display:flex;border-bottom:1px solid rgba(196,154,60,0.2);
+}
+.tab {
+flex:1;padding:14px;text-align:center;
+font-family:‘Aref Ruqaa’,serif;font-size:1rem;
+color:rgba(212,175,90,0.5);cursor:pointer;
+border-bottom:2px solid transparent;
+transition:all 0.2s;
+}
+.tab.active { color:#D4AF5A;border-bottom-color:#C49A3C; }
+
+.section { display:none;padding:16px; }
+.section.active { display:block; }
+
+/* SCANNER */
+#reader { width:100%;border-radius:16px;overflow:hidden;border:2px solid rgba(196,154,60,0.3); }
+.scan-result {
+margin-top:16px;padding:16px;
+background:rgba(196,154,60,0.08);
+border-radius:14px;border:1px solid rgba(196,154,60,0.2);
+display:none;
+}
+.scan-result.show { display:block; }
+.scan-name { font-family:‘Aref Ruqaa’,serif;font-size:1.2rem;color:#D4AF5A;margin-bottom:4px; }
+.scan-detail { font-size:0.82rem;color:rgba(212,175,90,0.7);margin-bottom:10px; }
+.scan-btn {
+display:inline-block;padding:10px 24px;border-radius:50px;
+font-family:‘Aref Ruqaa’,serif;font-size:0.95rem;
+cursor:pointer;border:none;margin-left:8px;
+}
+.btn-confirm { background:linear-gradient(135deg,#2E7D32,#43A047);color:#fff; }
+.btn-reject { background:#8B4040;color:#fff; }
+.btn-rescan { background:rgba(196,154,60,0.15);color:#D4AF5A;border:1px solid rgba(196,154,60,0.3); }
+
+.already-badge {
+display:inline-block;padding:4px 12px;border-radius:20px;
+font-size:0.75rem;font-family:‘Aref Ruqaa’,serif;
+background:rgba(139,64,64,0.3);color:#E57373;
+border:1px solid rgba(139,64,64,0.4);
+}
+.new-badge {
+display:inline-block;padding:4px 12px;border-radius:20px;
+font-size:0.75rem;font-family:‘Aref Ruqaa’,serif;
+background:rgba(46,125,50,0.3);color:#81C784;
+border:1px solid rgba(46,125,50,0.4);
+}
+
+/* TABLE */
+.stats-row {
+display:flex;gap:10px;margin-bottom:16px;
+}
+.stat-box {
+flex:1;background:rgba(196,154,60,0.08);
+border-radius:14px;border:1px solid rgba(196,154,60,0.2);
+padding:14px;text-align:center;
+}
+.stat-num { font-family:‘Aref Ruqaa’,serif;font-size:2rem;color:#C49A3C; }
+.stat-label { font-size:0.72rem;color:rgba(212,175,90,0.6);margin-top:2px; }
+
+.search-input {
+width:100%;padding:11px 16px;
+background:rgba(255,255,255,0.05);
+border:1px solid rgba(196,154,60,0.25);
+border-radius:50px;color:#EDE0C4;
+font-family:‘Tajawal’,Arial,sans-serif;font-size:0.9rem;
+outline:none;margin-bottom:14px;
+direction:rtl;
+}
+
+.guest-table { width:100%;border-collapse:collapse; }
+.guest-table th {
+font-family:‘Aref Ruqaa’,serif;font-size:0.85rem;
+color:#D4AF5A;padding:10px 8px;
+border-bottom:1px solid rgba(196,154,60,0.3);
+text-align:right;
+}
+.guest-table td {
+padding:10px 8px;font-size:0.82rem;
+border-bottom:1px solid rgba(196,154,60,0.1);
+color:#EDE0C4;
+}
+.guest-table tr:hover td { background:rgba(196,154,60,0.05); }
+.status-in { color:#81C784; }
+.status-out { color:#E57373; }
+.status-pending { color:rgba(212,175,90,0.5); }
+
+.refresh-btn {
+display:block;width:100%;padding:12px;
+background:rgba(196,154,60,0.1);
+border:1px solid rgba(196,154,60,0.25);
+border-radius:50px;color:#D4AF5A;
+font-family:‘Aref Ruqaa’,serif;font-size:1rem;
+cursor:pointer;text-align:center;margin-bottom:14px;
+}
+
+.gdiv { width:80px;height:1px;background:linear-gradient(90deg,transparent,#C49A3C,transparent);margin:14px auto; }
+
+/* Toast */
+.toast {
+position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+background:#1A0E03;border:1px solid rgba(196,154,60,0.4);
+color:#D4AF5A;padding:12px 24px;border-radius:50px;
+font-family:‘Aref Ruqaa’,serif;font-size:0.95rem;
+z-index:9999;opacity:0;transition:opacity 0.3s;
+pointer-events:none;white-space:nowrap;
+}
+.toast.show { opacity:1; }
+</style>
+
+</head>
+<body>
+
+<div class="header">
+  <h1>🔍 فحص دعوات الزفاف</h1>
+  <p>علاء &amp; إسلام · ٢٣ يوليو ٢٠٢٦</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('scanner')">📷 مسح QR</div>
+  <div class="tab" onclick="switchTab('table')">📋 قائمة الضيوف</div>
+</div>
+
+<!-- SCANNER TAB -->
+
+<div class="section active" id="tab-scanner">
+  <div style="text-align:center;margin-bottom:12px;">
+    <div style="font-family:'Aref Ruqaa',serif;font-size:0.9rem;color:rgba(212,175,90,0.6);">وجّه الكاميرا نحو رمز QR الخاص بالضيف</div>
+  </div>
+  <div id="reader"></div>
+  <div class="scan-result" id="scanResult">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div class="scan-name" id="scanName">—</div>
+      <div id="scanBadge"></div>
+    </div>
+    <div class="scan-detail" id="scanDetail">—</div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+      <div class="scan-btn btn-confirm" id="btnConfirmEntry" onclick="confirmEntry()">✅ دخول مؤكد</div>
+      <div class="scan-btn btn-rescan" onclick="rescan()">🔄 مسح جديد</div>
+    </div>
+  </div>
+</div>
+
+<!-- TABLE TAB -->
+
+<div class="section" id="tab-table">
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-num" id="totalConfirmed">—</div>
+      <div class="stat-label">إجمالي المؤكدين</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="totalEntered">—</div>
+      <div class="stat-label">دخلوا الحفل</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="totalPending">—</div>
+      <div class="stat-label">لم يصلوا بعد</div>
+    </div>
+  </div>
+
+  <div onclick="loadTable()" class="refresh-btn">🔄 تحديث القائمة</div>
+
+  <input type="text" class="search-input" id="searchInput" placeholder="ابحث باسم الضيف..." oninput="filterTable()">
+
+  <table class="guest-table">
+    <thead>
+      <tr>
+        <th>الاسم</th>
+        <th>العدد</th>
+        <th>النوع</th>
+        <th>الحالة</th>
+      </tr>
+    </thead>
+    <tbody id="guestTableBody">
+      <tr><td colspan="4" style="text-align:center;opacity:0.5;padding:20px;">اضغط تحديث لتحميل القائمة</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZgqTMF2JBNUFBwRMKz_xCUJv4RWXIiMgZqdcCZEA5LI9zA83w2FGYdoqJo19I-qumfg/exec';
+var SHEET_ID   = '1-8kKFbPWbgjbCODga_UpZAuzHlisknYKO6exLMs0X5s';
+var scanner    = null;
+var lastScan   = null;
+var allGuests  = [];
+
+// ---- TABS ----
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(function(t,i) {
+    t.classList.toggle('active', (tab==='scanner'&&i===0)||(tab==='table'&&i===1));
+  });
+  document.getElementById('tab-scanner').classList.toggle('active', tab==='scanner');
+  document.getElementById('tab-table').classList.toggle('active', tab==='table');
+  if (tab==='table') loadTable();
+  if (tab==='scanner' && !scanner) initScanner();
+}
+
+// ---- SCANNER ----
+function initScanner() {
+  scanner = new Html5Qrcode('reader');
+  scanner.start(
+    { facingMode: 'environment' },
+    { fps:10, qrbox:{ width:250, height:250 } },
+    onScanSuccess,
+    function(){}
+  ).catch(function(e) {
+    document.getElementById('reader').innerHTML = '<div style="padding:20px;text-align:center;color:rgba(212,175,90,0.6);">تعذّر الوصول للكاميرا.<br>يرجى السماح بالوصول وإعادة المحاولة.</div>';
+  });
+}
+
+function onScanSuccess(text) {
+  if (lastScan === text) return;
+  lastScan = text;
+  scanner.pause();
+
+  // Parse QR: "NAME|PHONE|TYPE|COUNT"
+  var parts = text.split('|');
+  var name  = parts[0] || '—';
+  var phone = parts[1] || '—';
+  var type  = parts[2] || '—';
+  var count = parts[3] || '1';
+
+  // Check if already entered (stored in localStorage)
+  var enteredKey = 'entered_' + phone;
+  var alreadyIn  = localStorage.getItem(enteredKey);
+
+  document.getElementById('scanName').textContent   = name;
+  document.getElementById('scanDetail').textContent = 'الهاتف: ' + phone + ' · النوع: ' + type + ' · العدد: ' + count;
+  document.getElementById('scanBadge').innerHTML    = alreadyIn
+    ? '<div class="already-badge">دخل مسبقاً ⚠️</div>'
+    : '<div class="new-badge">جديد ✅</div>';
+
+  document.getElementById('btnConfirmEntry').style.display = alreadyIn ? 'none' : 'inline-block';
+  document.getElementById('scanResult').classList.add('show');
+
+  // Store for confirmEntry
+  window._currentScan = { name:name, phone:phone, type:type, count:count };
+  showToast(alreadyIn ? '⚠️ ' + name + ' دخل مسبقاً!' : '✅ ' + name + ' — دعوة صالحة');
+}
+
+function confirmEntry() {
+  if (!window._currentScan) return;
+  var s = window._currentScan;
+  localStorage.setItem('entered_' + s.phone, '1');
+
+  // Save to sheet column G (entered)
+  var url = SCRIPT_URL + '?action=markEntry'
+    + '&phone=' + encodeURIComponent(s.phone)
+    + '&name='  + encodeURIComponent(s.name);
+  var img = new Image(); img.src = url;
+
+  document.getElementById('scanBadge').innerHTML = '<div class="already-badge">تم التسجيل ✅</div>';
+  document.getElementById('btnConfirmEntry').style.display = 'none';
+  showToast('تم تسجيل دخول ' + s.name);
+}
+
+function rescan() {
+  lastScan = null;
+  window._currentScan = null;
+  document.getElementById('scanResult').classList.remove('show');
+  scanner.resume();
+}
+
+// ---- TABLE ----
+function loadTable() {
+  document.getElementById('guestTableBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;opacity:0.5;">جارٍ التحميل...</td></tr>';
+  var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=Sheet1';
+  fetch(url)
+    .then(function(r){ return r.text(); })
+    .then(function(text){
+      var start = text.indexOf('(') + 1;
+      var end   = text.lastIndexOf(')');
+      var data  = JSON.parse(text.substring(start, end));
+      var rows  = data.table && data.table.rows ? data.table.rows : [];
+      allGuests = [];
+      var totalConfirmed=0, totalEntered=0;
+
+      rows.forEach(function(row) {
+        if (!row.c || !row.c[0] || !row.c[0].v) return;
+        var name     = row.c[0].v || '';
+        var phone    = row.c[1] ? (row.c[1].v || '') : '';
+        var attend   = row.c[2] ? (row.c[2].v || '') : '';
+        var count    = row.c[3] ? parseInt(row.c[3].v)||1 : 1;
+        var type     = row.c[4] ? (row.c[4].v || '') : '';
+        var entered  = localStorage.getItem('entered_' + phone);
+
+        if (attend.indexOf('حضر') !== -1 && attend.indexOf('اعتذر') === -1) {
+          totalConfirmed += count;
+          if (entered) totalEntered += count;
+          allGuests.push({ name:name, phone:phone, count:count, type:type, entered:!!entered });
+        }
+      });
+
+      document.getElementById('totalConfirmed').textContent = totalConfirmed;
+      document.getElementById('totalEntered').textContent   = totalEntered;
+      document.getElementById('totalPending').textContent   = totalConfirmed - totalEntered;
+      renderTable(allGuests);
+    })
+    .catch(function(){
+      document.getElementById('guestTableBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#E57373;">خطأ في التحميل</td></tr>';
+    });
+}
+
+function renderTable(guests) {
+  if (!guests.length) {
+    document.getElementById('guestTableBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;opacity:0.5;">لا يوجد ضيوف بعد</td></tr>';
+    return;
+  }
+  var html = '';
+  guests.forEach(function(g) {
+    var statusClass = g.entered ? 'status-in' : 'status-pending';
+    var statusText  = g.entered ? 'دخل ✅' : 'لم يصل';
+    html += '<tr>'
+      + '<td>' + g.name + '</td>'
+      + '<td style="text-align:center;">' + g.count + '</td>'
+      + '<td>' + g.type + '</td>'
+      + '<td class="' + statusClass + '">' + statusText + '</td>'
+      + '</tr>';
+  });
+  document.getElementById('guestTableBody').innerHTML = html;
+}
+
+function filterTable() {
+  var q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!q) { renderTable(allGuests); return; }
+  var filtered = allGuests.filter(function(g){ return g.name.toLowerCase().indexOf(q) !== -1; });
+  renderTable(filtered);
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+// Init scanner on load
+window.onload = function() { initScanner(); };
+</script>
+
+</body>
+</html>
