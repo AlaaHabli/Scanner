@@ -1,134 +1,76 @@
 <!DOCTYPE html>
-
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>فحص دعوات الزفاف</title>
 <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-html,body { background:#1A0E03; font-family:'Tajawal',Arial,sans-serif; direction:rtl; min-height:100vh; color:#EDE0C4; }
+html,body { background:#1A0E03; font-family:'Tajawal',Arial,sans-serif; direction:rtl; min-height:100vh; color:#EDE0C4; -webkit-font-smoothing:antialiased; }
 
-.header {
-background:linear-gradient(180deg,#0D0701,#1A0E03);
-padding:20px;text-align:center;
-border-bottom:2px solid rgba(196,154,60,0.3);
-}
-.header h1 { font-family:‘Aref Ruqaa’,serif;font-size:1.5rem;color:#D4AF5A; }
-.header p { font-size:0.8rem;color:rgba(212,175,90,0.6);margin-top:4px; }
+.header { background:#0D0701; padding:18px 20px; text-align:center; border-bottom:1px solid rgba(196,154,60,0.3); }
+.header h1 { font-family:'Aref Ruqaa',serif; font-size:1.4rem; color:#D4AF5A; }
+.header p { font-size:0.78rem; color:rgba(212,175,90,0.5); margin-top:3px; }
 
-.tabs {
-display:flex;border-bottom:1px solid rgba(196,154,60,0.2);
-}
-.tab {
-flex:1;padding:14px;text-align:center;
-font-family:‘Aref Ruqaa’,serif;font-size:1rem;
-color:rgba(212,175,90,0.5);cursor:pointer;
-border-bottom:2px solid transparent;
-transition:all 0.2s;
-}
-.tab.active { color:#D4AF5A;border-bottom-color:#C49A3C; }
+.tabs { display:flex; border-bottom:1px solid rgba(196,154,60,0.2); }
+.tab { flex:1; padding:13px; text-align:center; font-family:'Aref Ruqaa',serif; font-size:0.95rem; color:rgba(212,175,90,0.45); cursor:pointer; border-bottom:2px solid transparent; }
+.tab.active { color:#D4AF5A; border-bottom-color:#C49A3C; }
 
-.section { display:none;padding:16px; }
+.section { display:none; padding:16px; }
 .section.active { display:block; }
 
 /* SCANNER */
-#reader { width:100%;border-radius:16px;overflow:hidden;border:2px solid rgba(196,154,60,0.3); }
-.scan-result {
-margin-top:16px;padding:16px;
-background:rgba(196,154,60,0.08);
-border-radius:14px;border:1px solid rgba(196,154,60,0.2);
-display:none;
+#startBtn {
+  display:block; width:100%; padding:16px;
+  background:linear-gradient(135deg,#8B6914,#C49A3C);
+  color:#fff; border:none; border-radius:14px;
+  font-family:'Aref Ruqaa',serif; font-size:1.1rem;
+  cursor:pointer; margin-bottom:14px;
+  -webkit-appearance:none;
 }
-.scan-result.show { display:block; }
-.scan-name { font-family:‘Aref Ruqaa’,serif;font-size:1.2rem;color:#D4AF5A;margin-bottom:4px; }
-.scan-detail { font-size:0.82rem;color:rgba(212,175,90,0.7);margin-bottom:10px; }
-.scan-btn {
-display:inline-block;padding:10px 24px;border-radius:50px;
-font-family:‘Aref Ruqaa’,serif;font-size:0.95rem;
-cursor:pointer;border:none;margin-left:8px;
+#stopBtn {
+  display:none; width:100%; padding:12px;
+  background:rgba(139,64,64,0.3); color:#E57373;
+  border:1px solid rgba(139,64,64,0.4); border-radius:14px;
+  font-family:'Aref Ruqaa',serif; font-size:0.95rem;
+  cursor:pointer; margin-bottom:14px;
+  -webkit-appearance:none;
 }
-.btn-confirm { background:linear-gradient(135deg,#2E7D32,#43A047);color:#fff; }
-.btn-reject { background:#8B4040;color:#fff; }
-.btn-rescan { background:rgba(196,154,60,0.15);color:#D4AF5A;border:1px solid rgba(196,154,60,0.3); }
+#reader { width:100%; border-radius:14px; overflow:hidden; border:1px solid rgba(196,154,60,0.25); background:#000; min-height:250px; }
+#reader video { width:100% !important; border-radius:14px; }
 
-.already-badge {
-display:inline-block;padding:4px 12px;border-radius:20px;
-font-size:0.75rem;font-family:‘Aref Ruqaa’,serif;
-background:rgba(139,64,64,0.3);color:#E57373;
-border:1px solid rgba(139,64,64,0.4);
+.result-card {
+  display:none; margin-top:14px;
+  background:rgba(196,154,60,0.08);
+  border:1px solid rgba(196,154,60,0.25);
+  border-radius:16px; padding:18px;
 }
-.new-badge {
-display:inline-block;padding:4px 12px;border-radius:20px;
-font-size:0.75rem;font-family:‘Aref Ruqaa’,serif;
-background:rgba(46,125,50,0.3);color:#81C784;
-border:1px solid rgba(46,125,50,0.4);
-}
+.result-card.show { display:block; }
+.r-name { font-family:'Aref Ruqaa',serif; font-size:1.3rem; color:#D4AF5A; margin-bottom:6px; }
+.r-detail { font-size:0.82rem; color:rgba(212,175,90,0.65); margin-bottom:14px; line-height:1.8; }
+.badge-new { display:inline-block; padding:3px 12px; border-radius:20px; font-size:0.75rem; background:rgba(46,125,50,0.3); color:#81C784; border:1px solid rgba(46,125,50,0.4); margin-bottom:10px; }
+.badge-dup { display:inline-block; padding:3px 12px; border-radius:20px; font-size:0.75rem; background:rgba(139,64,64,0.3); color:#E57373; border:1px solid rgba(139,64,64,0.4); margin-bottom:10px; }
+.r-btns { display:flex; gap:8px; flex-wrap:wrap; }
+.btn-enter { padding:11px 20px; background:linear-gradient(135deg,#2E7D32,#43A047); color:#fff; border:none; border-radius:50px; font-family:'Aref Ruqaa',serif; font-size:0.95rem; cursor:pointer; -webkit-appearance:none; }
+.btn-rescan { padding:11px 20px; background:rgba(196,154,60,0.1); color:#D4AF5A; border:1px solid rgba(196,154,60,0.3); border-radius:50px; font-family:'Aref Ruqaa',serif; font-size:0.95rem; cursor:pointer; -webkit-appearance:none; }
 
 /* TABLE */
-.stats-row {
-display:flex;gap:10px;margin-bottom:16px;
-}
-.stat-box {
-flex:1;background:rgba(196,154,60,0.08);
-border-radius:14px;border:1px solid rgba(196,154,60,0.2);
-padding:14px;text-align:center;
-}
-.stat-num { font-family:‘Aref Ruqaa’,serif;font-size:2rem;color:#C49A3C; }
-.stat-label { font-size:0.72rem;color:rgba(212,175,90,0.6);margin-top:2px; }
+.stats { display:flex; gap:10px; margin-bottom:16px; }
+.stat { flex:1; background:rgba(196,154,60,0.08); border:1px solid rgba(196,154,60,0.2); border-radius:14px; padding:14px 8px; text-align:center; }
+.stat-n { font-family:'Aref Ruqaa',serif; font-size:1.9rem; color:#C49A3C; line-height:1; }
+.stat-l { font-size:0.68rem; color:rgba(212,175,90,0.55); margin-top:3px; }
+.refresh { display:block; width:100%; padding:12px; background:rgba(196,154,60,0.1); border:1px solid rgba(196,154,60,0.25); border-radius:50px; color:#D4AF5A; font-family:'Aref Ruqaa',serif; font-size:0.95rem; cursor:pointer; text-align:center; margin-bottom:12px; -webkit-appearance:none; }
+.search { width:100%; padding:11px 16px; background:rgba(255,255,255,0.05); border:1px solid rgba(196,154,60,0.2); border-radius:50px; color:#EDE0C4; font-family:'Tajawal',Arial,sans-serif; font-size:0.88rem; outline:none; margin-bottom:14px; direction:rtl; }
+table { width:100%; border-collapse:collapse; }
+th { font-family:'Aref Ruqaa',serif; font-size:0.82rem; color:#D4AF5A; padding:9px 6px; border-bottom:1px solid rgba(196,154,60,0.25); text-align:right; }
+td { padding:9px 6px; font-size:0.8rem; border-bottom:1px solid rgba(196,154,60,0.1); color:#EDE0C4; }
+.in { color:#81C784; }
+.pending { color:rgba(212,175,90,0.4); }
 
-.search-input {
-width:100%;padding:11px 16px;
-background:rgba(255,255,255,0.05);
-border:1px solid rgba(196,154,60,0.25);
-border-radius:50px;color:#EDE0C4;
-font-family:‘Tajawal’,Arial,sans-serif;font-size:0.9rem;
-outline:none;margin-bottom:14px;
-direction:rtl;
-}
-
-.guest-table { width:100%;border-collapse:collapse; }
-.guest-table th {
-font-family:‘Aref Ruqaa’,serif;font-size:0.85rem;
-color:#D4AF5A;padding:10px 8px;
-border-bottom:1px solid rgba(196,154,60,0.3);
-text-align:right;
-}
-.guest-table td {
-padding:10px 8px;font-size:0.82rem;
-border-bottom:1px solid rgba(196,154,60,0.1);
-color:#EDE0C4;
-}
-.guest-table tr:hover td { background:rgba(196,154,60,0.05); }
-.status-in { color:#81C784; }
-.status-out { color:#E57373; }
-.status-pending { color:rgba(212,175,90,0.5); }
-
-.refresh-btn {
-display:block;width:100%;padding:12px;
-background:rgba(196,154,60,0.1);
-border:1px solid rgba(196,154,60,0.25);
-border-radius:50px;color:#D4AF5A;
-font-family:‘Aref Ruqaa’,serif;font-size:1rem;
-cursor:pointer;text-align:center;margin-bottom:14px;
-}
-
-.gdiv { width:80px;height:1px;background:linear-gradient(90deg,transparent,#C49A3C,transparent);margin:14px auto; }
-
-/* Toast */
-.toast {
-position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
-background:#1A0E03;border:1px solid rgba(196,154,60,0.4);
-color:#D4AF5A;padding:12px 24px;border-radius:50px;
-font-family:‘Aref Ruqaa’,serif;font-size:0.95rem;
-z-index:9999;opacity:0;transition:opacity 0.3s;
-pointer-events:none;white-space:nowrap;
-}
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#0D0701; border:1px solid rgba(196,154,60,0.4); color:#D4AF5A; padding:10px 22px; border-radius:50px; font-family:'Aref Ruqaa',serif; font-size:0.9rem; z-index:9999; opacity:0; transition:opacity 0.3s; pointer-events:none; white-space:nowrap; }
 .toast.show { opacity:1; }
 </style>
-
 </head>
 <body>
 
@@ -138,229 +80,207 @@ pointer-events:none;white-space:nowrap;
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('scanner')">📷 مسح QR</div>
-  <div class="tab" onclick="switchTab('table')">📋 قائمة الضيوف</div>
+  <div class="tab active" id="tab1" onclick="switchTab('scanner')">📷 مسح QR</div>
+  <div class="tab" id="tab2" onclick="switchTab('table')">📋 قائمة الضيوف</div>
 </div>
 
-<!-- SCANNER TAB -->
-
-<div class="section active" id="tab-scanner">
-  <div style="text-align:center;margin-bottom:12px;">
-    <div style="font-family:'Aref Ruqaa',serif;font-size:0.9rem;color:rgba(212,175,90,0.6);">وجّه الكاميرا نحو رمز QR الخاص بالضيف</div>
-  </div>
+<div class="section active" id="sec-scanner">
+  <button id="startBtn" onclick="startScanner()">📷 تشغيل الكاميرا</button>
+  <button id="stopBtn" onclick="stopScanner()">⏹ إيقاف الكاميرا</button>
   <div id="reader"></div>
-  <div class="scan-result" id="scanResult">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <div class="scan-name" id="scanName">—</div>
-      <div id="scanBadge"></div>
-    </div>
-    <div class="scan-detail" id="scanDetail">—</div>
-    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-      <div class="scan-btn btn-confirm" id="btnConfirmEntry" onclick="confirmEntry()">✅ دخول مؤكد</div>
-      <div class="scan-btn btn-rescan" onclick="rescan()">🔄 مسح جديد</div>
+  <div class="result-card" id="resultCard">
+    <div id="rBadge"></div>
+    <div class="r-name" id="rName"></div>
+    <div class="r-detail" id="rDetail"></div>
+    <div class="r-btns">
+      <button class="btn-enter" id="btnEnter" onclick="confirmEntry()">✅ تسجيل الدخول</button>
+      <button class="btn-rescan" onclick="rescan()">🔄 مسح جديد</button>
     </div>
   </div>
 </div>
 
-<!-- TABLE TAB -->
-
-<div class="section" id="tab-table">
-  <div class="stats-row">
-    <div class="stat-box">
-      <div class="stat-num" id="totalConfirmed">—</div>
-      <div class="stat-label">إجمالي المؤكدين</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-num" id="totalEntered">—</div>
-      <div class="stat-label">دخلوا الحفل</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-num" id="totalPending">—</div>
-      <div class="stat-label">لم يصلوا بعد</div>
-    </div>
+<div class="section" id="sec-table">
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="totConf">—</div><div class="stat-l">إجمالي المؤكدين</div></div>
+    <div class="stat"><div class="stat-n" id="totIn">—</div><div class="stat-l">دخلوا الحفل</div></div>
+    <div class="stat"><div class="stat-n" id="totPend">—</div><div class="stat-l">لم يصلوا</div></div>
   </div>
-
-  <div onclick="loadTable()" class="refresh-btn">🔄 تحديث القائمة</div>
-
-  <input type="text" class="search-input" id="searchInput" placeholder="ابحث باسم الضيف..." oninput="filterTable()">
-
-  <table class="guest-table">
-    <thead>
-      <tr>
-        <th>الاسم</th>
-        <th>العدد</th>
-        <th>النوع</th>
-        <th>الحالة</th>
-      </tr>
-    </thead>
-    <tbody id="guestTableBody">
-      <tr><td colspan="4" style="text-align:center;opacity:0.5;padding:20px;">اضغط تحديث لتحميل القائمة</td></tr>
-    </tbody>
+  <button class="refresh" onclick="loadTable()">🔄 تحديث القائمة</button>
+  <input class="search" id="searchBox" placeholder="ابحث باسم الضيف..." oninput="filterTable()">
+  <table>
+    <thead><tr><th>الاسم</th><th>العدد</th><th>النوع</th><th>الحالة</th></tr></thead>
+    <tbody id="tbody"><tr><td colspan="4" style="text-align:center;padding:20px;opacity:0.4;">اضغط تحديث</td></tr></tbody>
   </table>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script>
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZgqTMF2JBNUFBwRMKz_xCUJv4RWXIiMgZqdcCZEA5LI9zA83w2FGYdoqJo19I-qumfg/exec';
-var SHEET_ID   = '1-8kKFbPWbgjbCODga_UpZAuzHlisknYKO6exLMs0X5s';
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZgqTMF2JBNUFBwRMKz_xCUJv4RWXIiMgZqdcCZEA5LI9zA83w2FGYdoqJo19I-qumfg/exec";
+var SHEET_ID   = "1-8kKFbPWbgjbCODga_UpZAuzHlisknYKO6exLMs0X5s";
 var scanner    = null;
+var scanning   = false;
 var lastScan   = null;
 var allGuests  = [];
+var currentScan = null;
 
-// ---- TABS ----
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach(function(t,i) {
-    t.classList.toggle('active', (tab==='scanner'&&i===0)||(tab==='table'&&i===1));
-  });
-  document.getElementById('tab-scanner').classList.toggle('active', tab==='scanner');
-  document.getElementById('tab-table').classList.toggle('active', tab==='table');
-  if (tab==='table') loadTable();
-  if (tab==='scanner' && !scanner) initScanner();
+function switchTab(t) {
+  document.getElementById('tab1').classList.toggle('active', t==='scanner');
+  document.getElementById('tab2').classList.toggle('active', t==='table');
+  document.getElementById('sec-scanner').classList.toggle('active', t==='scanner');
+  document.getElementById('sec-table').classList.toggle('active', t==='table');
+  if (t === 'table') loadTable();
 }
 
-// ---- SCANNER ----
-function initScanner() {
+function startScanner() {
+  document.getElementById('startBtn').style.display = 'none';
+  document.getElementById('stopBtn').style.display = 'block';
+  document.getElementById('reader').innerHTML = '';
+
   scanner = new Html5Qrcode('reader');
-  scanner.start(
-    { facingMode: 'environment' },
-    { fps:10, qrbox:{ width:250, height:250 } },
-    onScanSuccess,
-    function(){}
-  ).catch(function(e) {
-    document.getElementById('reader').innerHTML = '<div style="padding:20px;text-align:center;color:rgba(212,175,90,0.6);">تعذّر الوصول للكاميرا.<br>يرجى السماح بالوصول وإعادة المحاولة.</div>';
+  Html5Qrcode.getCameras().then(function(devices) {
+    if (!devices || devices.length === 0) {
+      toast('لا توجد كاميرا متاحة');
+      resetScanBtn();
+      return;
+    }
+    // Prefer back camera
+    var camId = devices[devices.length - 1].id;
+    scanner.start(
+      camId,
+      { fps: 15, qrbox: { width: 230, height: 230 } },
+      onScanSuccess,
+      function() {}
+    ).then(function() {
+      scanning = true;
+    }).catch(function(e) {
+      toast('خطأ في الكاميرا: ' + e);
+      resetScanBtn();
+    });
+  }).catch(function(e) {
+    toast('يرجى السماح بالوصول للكاميرا');
+    resetScanBtn();
   });
+}
+
+function stopScanner() {
+  if (scanner && scanning) {
+    scanner.stop().then(function() {
+      scanning = false;
+      scanner = null;
+      document.getElementById('reader').innerHTML = '';
+      resetScanBtn();
+    });
+  } else {
+    resetScanBtn();
+  }
+}
+
+function resetScanBtn() {
+  document.getElementById('startBtn').style.display = 'block';
+  document.getElementById('stopBtn').style.display = 'none';
 }
 
 function onScanSuccess(text) {
   if (lastScan === text) return;
   lastScan = text;
-  scanner.pause();
+  if (scanner && scanning) scanner.pause(true);
 
-  // Parse QR: "NAME|PHONE|TYPE|COUNT"
-  var parts = text.split('|');
-  var name  = parts[0] || '—';
-  var phone = parts[1] || '—';
-  var type  = parts[2] || '—';
-  var count = parts[3] || '1';
+  var parts  = text.split('|');
+  var name   = parts[0] || '—';
+  var phone  = parts[1] || '—';
+  var type   = parts[2] || '—';
+  var count  = parts[3] || '1';
+  var already = !!localStorage.getItem('entered_' + phone);
 
-  // Check if already entered (stored in localStorage)
-  var enteredKey = 'entered_' + phone;
-  var alreadyIn  = localStorage.getItem(enteredKey);
+  currentScan = { name:name, phone:phone, type:type, count:count };
 
-  document.getElementById('scanName').textContent   = name;
-  document.getElementById('scanDetail').textContent = 'الهاتف: ' + phone + ' · النوع: ' + type + ' · العدد: ' + count;
-  document.getElementById('scanBadge').innerHTML    = alreadyIn
-    ? '<div class="already-badge">دخل مسبقاً ⚠️</div>'
-    : '<div class="new-badge">جديد ✅</div>';
-
-  document.getElementById('btnConfirmEntry').style.display = alreadyIn ? 'none' : 'inline-block';
-  document.getElementById('scanResult').classList.add('show');
-
-  // Store for confirmEntry
-  window._currentScan = { name:name, phone:phone, type:type, count:count };
-  showToast(alreadyIn ? '⚠️ ' + name + ' دخل مسبقاً!' : '✅ ' + name + ' — دعوة صالحة');
+  document.getElementById('rName').textContent   = name;
+  document.getElementById('rDetail').innerHTML   = 'الهاتف: ' + phone + '<br>النوع: ' + type + ' &nbsp;·&nbsp; العدد: ' + count;
+  document.getElementById('rBadge').innerHTML    = already
+    ? '<div class="badge-dup">دخل مسبقاً ⚠️</div>'
+    : '<div class="badge-new">دعوة صالحة ✅</div>';
+  document.getElementById('btnEnter').style.display = already ? 'none' : 'inline-block';
+  document.getElementById('resultCard').classList.add('show');
+  toast(already ? '⚠️ ' + name + ' دخل مسبقاً' : '✅ ' + name);
 }
 
 function confirmEntry() {
-  if (!window._currentScan) return;
-  var s = window._currentScan;
-  localStorage.setItem('entered_' + s.phone, '1');
-
-  // Save to sheet column G (entered)
-  var url = SCRIPT_URL + '?action=markEntry'
-    + '&phone=' + encodeURIComponent(s.phone)
-    + '&name='  + encodeURIComponent(s.name);
-  var img = new Image(); img.src = url;
-
-  document.getElementById('scanBadge').innerHTML = '<div class="already-badge">تم التسجيل ✅</div>';
-  document.getElementById('btnConfirmEntry').style.display = 'none';
-  showToast('تم تسجيل دخول ' + s.name);
+  if (!currentScan) return;
+  localStorage.setItem('entered_' + currentScan.phone, '1');
+  var img = new Image();
+  img.src = SCRIPT_URL + '?action=markEntry&phone=' + encodeURIComponent(currentScan.phone) + '&name=' + encodeURIComponent(currentScan.name);
+  document.getElementById('rBadge').innerHTML = '<div class="badge-new">تم تسجيل الدخول ✅</div>';
+  document.getElementById('btnEnter').style.display = 'none';
+  toast('تم تسجيل دخول ' + currentScan.name);
 }
 
 function rescan() {
   lastScan = null;
-  window._currentScan = null;
-  document.getElementById('scanResult').classList.remove('show');
-  scanner.resume();
+  currentScan = null;
+  document.getElementById('resultCard').classList.remove('show');
+  if (scanner && scanning) scanner.resume();
 }
 
-// ---- TABLE ----
 function loadTable() {
-  document.getElementById('guestTableBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;opacity:0.5;">جارٍ التحميل...</td></tr>';
+  document.getElementById('tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;opacity:0.4;">جارٍ التحميل...</td></tr>';
   var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=Sheet1';
   fetch(url)
-    .then(function(r){ return r.text(); })
-    .then(function(text){
-      var start = text.indexOf('(') + 1;
-      var end   = text.lastIndexOf(')');
-      var data  = JSON.parse(text.substring(start, end));
-      var rows  = data.table && data.table.rows ? data.table.rows : [];
+    .then(function(r) { return r.text(); })
+    .then(function(text) {
+      var s = text.indexOf('(') + 1;
+      var e = text.lastIndexOf(')');
+      var data = JSON.parse(text.substring(s, e));
+      var rows = data.table && data.table.rows ? data.table.rows : [];
       allGuests = [];
-      var totalConfirmed=0, totalEntered=0;
-
+      var totConf = 0, totIn = 0;
       rows.forEach(function(row) {
         if (!row.c || !row.c[0] || !row.c[0].v) return;
-        var name     = row.c[0].v || '';
-        var phone    = row.c[1] ? (row.c[1].v || '') : '';
-        var attend   = row.c[2] ? (row.c[2].v || '') : '';
-        var count    = row.c[3] ? parseInt(row.c[3].v)||1 : 1;
-        var type     = row.c[4] ? (row.c[4].v || '') : '';
-        var entered  = localStorage.getItem('entered_' + phone);
-
+        var name    = row.c[0].v || '';
+        var phone   = row.c[1] ? (row.c[1].v || '') : '';
+        var attend  = row.c[2] ? (row.c[2].v || '') : '';
+        var count   = row.c[3] ? parseInt(row.c[3].v) || 1 : 1;
+        var type    = row.c[4] ? (row.c[4].v || '') : '';
+        var entered = !!localStorage.getItem('entered_' + phone);
         if (attend.indexOf('حضر') !== -1 && attend.indexOf('اعتذر') === -1) {
-          totalConfirmed += count;
-          if (entered) totalEntered += count;
-          allGuests.push({ name:name, phone:phone, count:count, type:type, entered:!!entered });
+          totConf += count;
+          if (entered) totIn += count;
+          allGuests.push({ name:name, phone:phone, count:count, type:type, entered:entered });
         }
       });
-
-      document.getElementById('totalConfirmed').textContent = totalConfirmed;
-      document.getElementById('totalEntered').textContent   = totalEntered;
-      document.getElementById('totalPending').textContent   = totalConfirmed - totalEntered;
+      document.getElementById('totConf').textContent = totConf;
+      document.getElementById('totIn').textContent   = totIn;
+      document.getElementById('totPend').textContent = totConf - totIn;
       renderTable(allGuests);
     })
-    .catch(function(){
-      document.getElementById('guestTableBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#E57373;">خطأ في التحميل</td></tr>';
+    .catch(function() {
+      document.getElementById('tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:16px;color:#E57373;">خطأ في التحميل</td></tr>';
     });
 }
 
 function renderTable(guests) {
   if (!guests.length) {
-    document.getElementById('guestTableBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;opacity:0.5;">لا يوجد ضيوف بعد</td></tr>';
+    document.getElementById('tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;opacity:0.4;">لا يوجد ضيوف</td></tr>';
     return;
   }
-  var html = '';
-  guests.forEach(function(g) {
-    var statusClass = g.entered ? 'status-in' : 'status-pending';
-    var statusText  = g.entered ? 'دخل ✅' : 'لم يصل';
-    html += '<tr>'
-      + '<td>' + g.name + '</td>'
-      + '<td style="text-align:center;">' + g.count + '</td>'
-      + '<td>' + g.type + '</td>'
-      + '<td class="' + statusClass + '">' + statusText + '</td>'
-      + '</tr>';
-  });
-  document.getElementById('guestTableBody').innerHTML = html;
+  document.getElementById('tbody').innerHTML = guests.map(function(g) {
+    return '<tr><td>' + g.name + '</td><td style="text-align:center">' + g.count + '</td><td>' + g.type + '</td><td class="' + (g.entered ? 'in' : 'pending') + '">' + (g.entered ? 'دخل ✅' : 'لم يصل') + '</td></tr>';
+  }).join('');
 }
 
 function filterTable() {
-  var q = document.getElementById('searchInput').value.trim().toLowerCase();
+  var q = document.getElementById('searchBox').value.trim();
   if (!q) { renderTable(allGuests); return; }
-  var filtered = allGuests.filter(function(g){ return g.name.toLowerCase().indexOf(q) !== -1; });
-  renderTable(filtered);
+  renderTable(allGuests.filter(function(g) { return g.name.indexOf(q) !== -1; }));
 }
 
-function showToast(msg) {
+function toast(msg) {
   var t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+  setTimeout(function() { t.classList.remove('show'); }, 3000);
 }
-
-// Init scanner on load
-window.onload = function() { initScanner(); };
 </script>
-
 </body>
 </html>
