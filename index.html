@@ -194,9 +194,11 @@ function resetScanBtn() {
 
 function onScanSuccess(text) {
   if (lastScan === text) return;
-  beep();
   lastScan = text;
-  if (scanner && scanning) scanner.pause(true);
+  // Reset lastScan after 5 seconds to allow rescanning same QR
+  setTimeout(function() { lastScan = null; }, 5000);
+  beep();
+
 
   var parts  = text.split('|');
   var phone  = parts[0] || '—';
