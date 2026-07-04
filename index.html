@@ -113,7 +113,7 @@ td { padding:9px 6px; font-size:0.8rem; border-bottom:1px solid rgba(196,154,60,
 
 <div class="toast" id="toast"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
+<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZgqTMF2JBNUFBwRMKz_xCUJv4RWXIiMgZqdcCZEA5LI9zA83w2FGYdoqJo19I-qumfg/exec";
 var SHEET_ID   = "1-8kKFbPWbgjbCODga_UpZAuzHlisknYKO6exLMs0X5s";
@@ -150,6 +150,11 @@ function startScanner() {
       var canvas = document.getElementById('overlay');
       canvas.width  = video.videoWidth;
       canvas.height = video.videoHeight;
+      if (typeof jsQR === 'undefined') {
+        toast('خطأ: مكتبة QR لم تُحمَّل');
+        return;
+      }
+      toast('الكاميرا جاهزة — وجّه نحو QR');
       scanFrame();
     });
   }).catch(function(e) {
