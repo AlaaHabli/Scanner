@@ -232,6 +232,11 @@ function onScanSuccess(text) {
   document.getElementById('btnEnter').style.display = already ? 'none' : 'inline-block';
   document.getElementById('resultCard').classList.add('show');
   toast(already ? '⚠️ ' + name + ' دخل مسبقاً' : '✅ ' + name);
+  // Auto-resume after 5 seconds if user doesn't act
+  clearTimeout(window._autoResume);
+  window._autoResume = setTimeout(function() {
+    if (lastScan) { rescan(); }
+  }, 5000);
 }
 
 function confirmEntry() {
