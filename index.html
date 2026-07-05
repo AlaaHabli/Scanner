@@ -7,24 +7,45 @@
 <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-html,body { background:#1A0E03; font-family:'Tajawal',Arial,sans-serif; direction:rtl; min-height:100vh; color:#EDE0C4; }
+html,body { background:#1A0E03; font-family:'Tajawal',Arial,sans-serif; direction:rtl; min-height:100vh; color:#EDE0C4; -webkit-font-smoothing:antialiased; }
+
 .header { background:#0D0701; padding:18px 20px; text-align:center; border-bottom:1px solid rgba(196,154,60,0.3); }
 .header h1 { font-family:'Aref Ruqaa',serif; font-size:1.4rem; color:#D4AF5A; }
 .header p { font-size:0.78rem; color:rgba(212,175,90,0.5); margin-top:3px; }
+
 .tabs { display:flex; border-bottom:1px solid rgba(196,154,60,0.2); }
 .tab { flex:1; padding:13px; text-align:center; font-family:'Aref Ruqaa',serif; font-size:0.95rem; color:rgba(212,175,90,0.45); cursor:pointer; border-bottom:2px solid transparent; }
 .tab.active { color:#D4AF5A; border-bottom-color:#C49A3C; }
+
 .section { display:none; padding:16px; }
 .section.active { display:block; }
 
 /* SCANNER */
-.scan-hint { text-align:center; font-size:0.82rem; color:rgba(212,175,90,0.6); margin-bottom:12px; }
-#startBtn { display:block; width:100%; padding:16px; background:linear-gradient(135deg,#8B6914,#C49A3C); color:#fff; border:none; border-radius:14px; font-family:'Aref Ruqaa',serif; font-size:1.1rem; cursor:pointer; margin-bottom:14px; -webkit-appearance:none; }
-#stopBtn { display:none; width:100%; padding:12px; background:rgba(139,64,64,0.3); color:#E57373; border:1px solid rgba(139,64,64,0.4); border-radius:14px; font-family:'Aref Ruqaa',serif; font-size:0.95rem; cursor:pointer; margin-bottom:14px; -webkit-appearance:none; }
-#video-container { position:relative; width:100%; border-radius:14px; overflow:hidden; background:#000; display:none; }
-#video { width:100%; display:block; }
-#overlay { position:absolute; top:0; left:0; width:100%; height:100%; }
-.result-card { display:none; margin-top:14px; background:rgba(196,154,60,0.08); border:1px solid rgba(196,154,60,0.25); border-radius:16px; padding:18px; }
+#startBtn {
+  display:block; width:100%; padding:16px;
+  background:linear-gradient(135deg,#8B6914,#C49A3C);
+  color:#fff; border:none; border-radius:14px;
+  font-family:'Aref Ruqaa',serif; font-size:1.1rem;
+  cursor:pointer; margin-bottom:14px;
+  -webkit-appearance:none;
+}
+#stopBtn {
+  display:none; width:100%; padding:12px;
+  background:rgba(139,64,64,0.3); color:#E57373;
+  border:1px solid rgba(139,64,64,0.4); border-radius:14px;
+  font-family:'Aref Ruqaa',serif; font-size:0.95rem;
+  cursor:pointer; margin-bottom:14px;
+  -webkit-appearance:none;
+}
+#reader { width:100%; border-radius:14px; overflow:hidden; border:1px solid rgba(196,154,60,0.25); background:#000; min-height:250px; }
+#reader video { width:100% !important; border-radius:14px; }
+
+.result-card {
+  display:none; margin-top:14px;
+  background:rgba(196,154,60,0.08);
+  border:1px solid rgba(196,154,60,0.25);
+  border-radius:16px; padding:18px;
+}
 .result-card.show { display:block; }
 .r-name { font-family:'Aref Ruqaa',serif; font-size:1.3rem; color:#D4AF5A; margin-bottom:6px; }
 .r-detail { font-size:0.82rem; color:rgba(212,175,90,0.65); margin-bottom:14px; line-height:1.8; }
@@ -46,6 +67,7 @@ th { font-family:'Aref Ruqaa',serif; font-size:0.82rem; color:#D4AF5A; padding:9
 td { padding:9px 6px; font-size:0.8rem; border-bottom:1px solid rgba(196,154,60,0.1); color:#EDE0C4; }
 .in { color:#81C784; }
 .pending { color:rgba(212,175,90,0.4); }
+
 .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#0D0701; border:1px solid rgba(196,154,60,0.4); color:#D4AF5A; padding:10px 22px; border-radius:50px; font-family:'Aref Ruqaa',serif; font-size:0.9rem; z-index:9999; opacity:0; transition:opacity 0.3s; pointer-events:none; white-space:nowrap; }
 .toast.show { opacity:1; }
 </style>
@@ -60,17 +82,12 @@ td { padding:9px 6px; font-size:0.8rem; border-bottom:1px solid rgba(196,154,60,
 <div class="tabs">
   <div class="tab active" id="tab1" onclick="switchTab('scanner')">📷 مسح QR</div>
   <div class="tab" id="tab2" onclick="switchTab('table')">📋 قائمة الضيوف</div>
-  <div class="tab" id="tab3" onclick="switchTab('reset')">🔓 إعادة تعيين</div>
 </div>
 
 <div class="section active" id="sec-scanner">
-  <div class="scan-hint">وجّه الكاميرا نحو رمز QR الخاص بالضيف</div>
   <button id="startBtn" onclick="startScanner()">📷 تشغيل الكاميرا</button>
   <button id="stopBtn" onclick="stopScanner()">⏹ إيقاف الكاميرا</button>
-  <div id="video-container">
-    <video id="video" playsinline autoplay muted></video>
-    <canvas id="overlay"></canvas>
-  </div>
+  <div id="reader"></div>
   <div class="result-card" id="resultCard">
     <div id="rBadge"></div>
     <div class="r-name" id="rName"></div>
@@ -96,121 +113,117 @@ td { padding:9px 6px; font-size:0.8rem; border-bottom:1px solid rgba(196,154,60,
   </table>
 </div>
 
-<div class="section" id="sec-reset">
-  <div style="text-align:center;padding:10px 0 20px;">
-    <div style="font-size:2rem;margin-bottom:8px;">🔓</div>
-    <div style="font-family:'Aref Ruqaa',serif;font-size:1.2rem;color:#D4AF5A;margin-bottom:6px;">إعادة تعيين الجهاز</div>
-    <div style="font-size:0.8rem;color:rgba(212,175,90,0.5);margin-bottom:20px;">احذف بيانات التسجيل المحفوظة على هذا الجهاز</div>
-  </div>
-  <button class="refresh" onclick="resetAll()" style="background:linear-gradient(135deg,#8B6914,#C49A3C);color:#fff;border:none;">إعادة تعيين جميع الدعوات</button>
-  <button class="refresh" onclick="resetFardi()">إعادة تعيين الدعوة الفردية فقط</button>
-  <button class="refresh" onclick="resetThunai()">إعادة تعيين الدعوة الثنائية فقط</button>
-  <button class="refresh" onclick="resetThulathi()">إعادة تعيين الدعوة الثلاثية فقط</button>
-  <button class="refresh" onclick="clearScanner()" style="color:#E57373;border-color:rgba(139,64,64,0.4);">🔄 مسح سجلات الدخول فقط</button>
-  <button class="refresh" onclick="clearAll()" style="background:#8B4040;color:#fff;border:none;">⚠️ مسح كل البيانات المحفوظة</button>
-  <div id="resetResult" style="display:none;text-align:center;padding:14px;font-family:'Aref Ruqaa',serif;font-size:1rem;color:#81C784;">✅ تم إعادة التعيين بنجاح!</div>
-</div>
-
 <div class="toast" id="toast"></div>
 
-<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script>
 var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZgqTMF2JBNUFBwRMKz_xCUJv4RWXIiMgZqdcCZEA5LI9zA83w2FGYdoqJo19I-qumfg/exec";
 var SHEET_ID   = "1-8kKFbPWbgjbCODga_UpZAuzHlisknYKO6exLMs0X5s";
+var scanner    = null;
+var scanning   = false;
+var lastScan   = null;
 var allGuests  = [];
 var currentScan = null;
-var lastScan   = null;
-var scanning   = false;
-var animFrame  = null;
-var stream     = null;
 
 function switchTab(t) {
   document.getElementById('tab1').classList.toggle('active', t==='scanner');
   document.getElementById('tab2').classList.toggle('active', t==='table');
-  document.getElementById('tab3').classList.toggle('active', t==='reset');
   document.getElementById('sec-scanner').classList.toggle('active', t==='scanner');
   document.getElementById('sec-table').classList.toggle('active', t==='table');
-  document.getElementById('sec-reset').classList.toggle('active', t==='reset');
   if (t === 'table') loadTable();
 }
 
 function startScanner() {
-  navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
-  }).then(function(s) {
-    stream = s;
-    var video = document.getElementById('video');
-    video.srcObject = s;
-    video.play();
-    document.getElementById('video-container').style.display = 'block';
-    document.getElementById('startBtn').style.display = 'none';
-    document.getElementById('stopBtn').style.display = 'block';
-    scanning = true;
-    video.addEventListener('loadedmetadata', function() {
-      var canvas = document.getElementById('overlay');
-      canvas.width  = video.videoWidth;
-      canvas.height = video.videoHeight;
-      if (typeof jsQR === 'undefined') {
-        toast('خطأ: مكتبة QR لم تُحمَّل');
-        return;
-      }
-      toast('الكاميرا جاهزة — وجّه نحو QR');
-      scanFrame();
+  document.getElementById('startBtn').style.display = 'none';
+  document.getElementById('stopBtn').style.display = 'block';
+  document.getElementById('reader').innerHTML = '';
+
+  scanner = new Html5Qrcode('reader');
+  Html5Qrcode.getCameras().then(function(devices) {
+    if (!devices || devices.length === 0) {
+      toast('لا توجد كاميرا متاحة');
+      resetScanBtn();
+      return;
+    }
+    // Try environment facing mode first, fallback to device id
+    scanner.start(
+      { facingMode: { exact: "environment" } },
+      { fps: 30, qrbox: { width: 300, height: 300 }, aspectRatio: 1.0 },
+      onScanSuccess,
+      function() {}
+    ).then(function() {
+      scanning = true;
+    }).catch(function() {
+      // Fallback to last camera device
+      var camId = devices[devices.length - 1].id;
+      scanner.start(
+        camId,
+        { fps: 30, qrbox: { width: 300, height: 300 }, aspectRatio: 1.0 },
+        onScanSuccess,
+        function() {}
+      ).then(function() {
+        scanning = true;
+      }).catch(function(e) {
+        toast('خطأ في الكاميرا: ' + e);
+        resetScanBtn();
+      });
     });
   }).catch(function(e) {
     toast('يرجى السماح بالوصول للكاميرا');
+    resetScanBtn();
   });
 }
 
 function stopScanner() {
-  scanning = false;
-  if (animFrame) cancelAnimationFrame(animFrame);
-  if (stream) stream.getTracks().forEach(function(t) { t.stop(); });
-  document.getElementById('video-container').style.display = 'none';
+  if (scanner && scanning) {
+    scanner.stop().then(function() {
+      scanning = false;
+      scanner = null;
+      document.getElementById('reader').innerHTML = '';
+      resetScanBtn();
+    });
+  } else {
+    resetScanBtn();
+  }
+}
+
+function resetScanBtn() {
   document.getElementById('startBtn').style.display = 'block';
   document.getElementById('stopBtn').style.display = 'none';
 }
 
-function scanFrame() {
-  if (!scanning) return;
-  var video  = document.getElementById('video');
-  var canvas = document.getElementById('overlay');
-  var ctx    = canvas.getContext('2d');
-
-  if (video.readyState === video.HAVE_ENOUGH_DATA) {
-    canvas.width  = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    var code = jsQR(imageData.data, imageData.width, imageData.height, {
-      inversionAttempts: 'dontInvert'
-    });
-    if (code && code.data && code.data !== lastScan) {
-      lastScan = code.data;
-      beep();
-      onScanSuccess(code.data);
-      setTimeout(function() { lastScan = null; }, 5000);
-    }
-  }
-  animFrame = requestAnimationFrame(scanFrame);
-}
-
 function onScanSuccess(text) {
+  if (lastScan === text) return;
+  lastScan = text;
+  // Reset lastScan after 5 seconds to allow rescanning same QR
+  setTimeout(function() { lastScan = null; }, 5000);
+  beep();
+
+
   var parts  = text.split('|');
   var phone  = parts[0] || '—';
   var count  = parts[1] || '1';
   var typeEn = parts[2] || '—';
   var type   = typeEn === 'fardi' ? 'فردي' : typeEn === 'thunai' ? 'ثنائي' : typeEn === 'thulathi' ? 'ثلاثي' : typeEn;
-
-  var name = phone;
-  for (var i = 0; i < allGuests.length; i++) {
-    if (allGuests[i].phone == phone || allGuests[i].phone == phone.replace('+','')) {
-      name = allGuests[i].name;
-      break;
-    }
+  // Look up name from loaded guest list
+  var name = '—';
+  for (var i=0; i<allGuests.length; i++) {
+    if (allGuests[i].phone == phone) { name = allGuests[i].name; break; }
   }
-
+  if (name === '—') {
+    // Try to find in allGuests after delay
+    setTimeout(function() {
+      for (var j=0; j<allGuests.length; j++) {
+        if (allGuests[j].phone == phone) {
+          document.getElementById('rName').textContent = allGuests[j].name;
+          break;
+        }
+      }
+    }, 2000);
+    name = phone;
+  }
   var already = !!localStorage.getItem('entered_' + phone);
+
   currentScan = { name:name, phone:phone, type:type, count:count };
 
   document.getElementById('rName').textContent   = name;
@@ -221,6 +234,11 @@ function onScanSuccess(text) {
   document.getElementById('btnEnter').style.display = already ? 'none' : 'inline-block';
   document.getElementById('resultCard').classList.add('show');
   toast(already ? '⚠️ ' + name + ' دخل مسبقاً' : '✅ ' + name);
+  // Auto-resume after 5 seconds if user doesn't act
+  clearTimeout(window._autoResume);
+  window._autoResume = setTimeout(function() {
+    if (lastScan) { rescan(); }
+  }, 5000);
 }
 
 function confirmEntry() {
@@ -231,19 +249,28 @@ function confirmEntry() {
   document.getElementById('rBadge').innerHTML = '<div class="badge-new">تم تسجيل الدخول ✅</div>';
   document.getElementById('btnEnter').style.display = 'none';
   toast('تم تسجيل دخول ' + currentScan.name);
-  // Update stats live
-  var totIn   = parseInt(document.getElementById('totIn').textContent)   || 0;
-  var totPend = parseInt(document.getElementById('totPend').textContent) || 0;
-  var cnt     = parseInt(currentScan.count) || 1;
-  document.getElementById('totIn').textContent   = totIn + cnt;
-  document.getElementById('totPend').textContent = Math.max(0, totPend - cnt);
   setTimeout(loadTable, 2000);
+  // Update stats live
+  var totIn = parseInt(document.getElementById('totIn').textContent) || 0;
+  var totPend = parseInt(document.getElementById('totPend').textContent) || 0;
+  var enteredCount = parseInt(currentScan.count) || 1;
+  document.getElementById('totIn').textContent   = totIn + enteredCount;
+  document.getElementById('totPend').textContent = Math.max(0, totPend - enteredCount);
+  // Also update table row if visible
+  var rows = document.getElementById('tbody').querySelectorAll('tr');
+  rows.forEach(function(row) {
+    if (row.textContent.indexOf(currentScan.name) !== -1) {
+      var cells = row.querySelectorAll('td');
+      if (cells[3]) { cells[3].className = 'in'; cells[3].textContent = 'دخل ✅'; }
+    }
+  });
 }
 
 function rescan() {
+  lastScan = null;
   currentScan = null;
-  lastScan    = null;
   document.getElementById('resultCard').classList.remove('show');
+  if (scanner && scanning) scanner.resume();
 }
 
 function loadTable() {
@@ -261,7 +288,7 @@ function loadTable() {
       rows.forEach(function(row) {
         if (!row.c || !row.c[0] || !row.c[0].v) return;
         var name    = row.c[0].v || '';
-        var phone   = row.c[1] ? String(row.c[1].v || '') : '';
+        var phone   = row.c[1] ? (row.c[1].v || '') : '';
         var attend  = row.c[2] ? (row.c[2].v || '') : '';
         var count   = row.c[3] ? parseInt(row.c[3].v) || 1 : 1;
         var type    = row.c[4] ? (row.c[4].v || '') : '';
@@ -298,10 +325,11 @@ function filterTable() {
   renderTable(allGuests.filter(function(g) { return g.name.indexOf(q) !== -1; }));
 }
 
+
 function beep() {
   try {
-    var ctx  = new (window.AudioContext || window.webkitAudioContext)();
-    var osc  = ctx.createOscillator();
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
     var gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -320,53 +348,6 @@ function toast(msg) {
   t.classList.add('show');
   setTimeout(function() { t.classList.remove('show'); }, 3000);
 }
-
-
-function showResetResult() {
-  var el = document.getElementById('resetResult');
-  el.style.display = 'block';
-  setTimeout(function() { el.style.display = 'none'; }, 2500);
-}
-
-function clearScanner() {
-  try {
-    var toRemove = [];
-    for (var i = 0; i < localStorage.length; i++) {
-      var key = localStorage.key(i);
-      if (key && key.indexOf('entered_') === 0) toRemove.push(key);
-    }
-    toRemove.forEach(function(k) { localStorage.removeItem(k); });
-    allGuests.forEach(function(g) { g.entered = false; });
-    showResetResult();
-    toast('تم مسح سجلات الدخول');
-  } catch(e) {}
-}
-
-function clearAll() {
-  try { localStorage.clear(); showResetResult(); toast('تم مسح كل البيانات'); } catch(e) {}
-}
-
-function resetAll() {
-  try {
-    ['rsvp_submitted_fardi','rsvp_submitted_fardi_type',
-     'rsvp_submitted_thunai','rsvp_submitted_thunai_type',
-     'rsvp_submitted_thulathi','rsvp_submitted_thulathi_type'].forEach(function(k){ localStorage.removeItem(k); });
-    clearScanner();
-    showResetResult();
-  } catch(e) {}
-}
-
-function resetFardi() {
-  try { localStorage.removeItem('rsvp_submitted_fardi'); localStorage.removeItem('rsvp_submitted_fardi_type'); showResetResult(); } catch(e) {}
-}
-function resetThunai() {
-  try { localStorage.removeItem('rsvp_submitted_thunai'); localStorage.removeItem('rsvp_submitted_thunai_type'); showResetResult(); } catch(e) {}
-}
-function resetThulathi() {
-  try { localStorage.removeItem('rsvp_submitted_thulathi'); localStorage.removeItem('rsvp_submitted_thulathi_type'); showResetResult(); } catch(e) {}
-}
-
-window.onload = function() { loadTable(); };
 </script>
 </body>
 </html>
